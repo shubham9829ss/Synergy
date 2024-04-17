@@ -1,0 +1,175 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  FaAngleLeft,
+  FaAngleRight,
+  FaExternalLinkAlt,
+  FaSearch,
+  FaUser,
+} from "react-icons/fa";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+// import { songs } from "./Home";
+import { useDispatch, useSelector } from "react-redux";
+import { useGlobalContext } from "../Context";
+import { songsFail, resetSongs, songsSuccess } from "../redux/songSlice.js";
+import { signOut } from "../redux/userSlice";
+import { reset } from "nodemon";
+
+// const searchingSongs = async (keyword, dispatch) => {
+//   try {
+//     const res = await fetch(`/api/songs?keyword=${keyword}`);
+//     const data = await res.json();
+//     return data;
+//   } catch (error) {
+//     dispatch(songsFail(error));
+//   }
+// };
+const searchingSongs = async (keyword, dispatch) => {
+  try {
+    const res = await fetch(`/api/songs?keyword=${keyword}`);
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    dispatch(songsFail(error));
+    throw new Error(error.message);
+  }
+};
+
+export default function Navbar() {
+  const { isAuthenticated } = useSelector((state) => state.account);
+  const location = useLocation();
+  const [keyword, setKeyword] = useState("");
+  const [showDropDown, setShowDropDown] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const handleSearchChange = async (e) => {
+    setKeyword(e.target.value);
+    try {
+      const data = await searchingSongs(e.target.value, dispatch);
+      dispatch(resetSongs());
+      dispatch(songsSuccess(data));
+    } catch (error) {
+      dispatch(songsFail(error));
+    }
+  };
+
+  // const filterSongs = (e) => {
+  //   setQuery(e.target.value);
+  //   const fil = songs.filter((song) => {
+  //     if (
+  //       song.title.toLowerCase().includes(e.target.value.toLowerCase()) ||
+  //       song.artist.toLowerCase().includes(e.target.value.toLowerCase())
+  //     ) {
+  //       return true;
+  //     } else {
+  //       return false;
+  //     }
+  //   });
+  //   console.log(fil);
+
+  //   if (e.target.value === "") setFilterredSongs([]);
+  //   else setFilterredSongs(fil);
+  // };
+
+  const logoutUser = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/user/logout", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      console.log(data);
+      dispatch(signOut());
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <header className="flex sticky top-0 z-50 justify-between items-center rounded-[6px] px-8 ml-2 mt-2 secondary_bg">
+      <div className="flex items-center w-1/2">
+        <FaAngleLeft className="bg-white/10 text-3xl p-1 rounded-[50%]" />
+        <FaAngleRight className="bg-white/10 text-3xl p-1 rounded-[50%]" />
+        <div className="w-full text-left py-4 relative">
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Search"
+            autoComplete="off"
+            value={keyword}
+            onChange={(e) => handleSearchChange(e)}
+            className={`block  w-full rounded-full pl-12 border-0  text-gray-300 shadow-sm ring ring-transparent placeholder:text-gray-400 focus:ring-[3px] focus:ring-inset focus:ring-white outline-none p-3 hover:ring-white/20 bg-[#1a1919]`}
+          />
+          <FaSearch className="absolute left-4 top-8" />
+        </div>
+      </div>
+      <div>
+        {!isAuthenticated ? (
+          <div>
+            <Link
+              to={"/signup"}
+              className="rounded-full text-base text-white font-semibold py-2 px-8 mt-4">
+              Sign Up
+            </Link>
+            <Link
+              to={"/login"}
+              className="rounded-full text-base text-white font-semibold py-2 px-8 mt-4">
+              Log in
+            </Link>
+          </div>
+        ) : (
+          <div className="relative ">
+            <button onClick={() => setShowDropDown(!showDropDown)}>
+              <FaUser />
+            </button>
+            {showDropDown && (
+              <div className="absolute dropdown bg-[#282828] top-8 text-sm right-0 w-[12rem]">
+                <ul className="p-1">
+                  <li className="">
+                    <Link
+                      className="flex p-2 justify-between hover:bg-white/10"
+                      to={"/account"}>
+                      <span>Account</span> <FaExternalLinkAlt />
+                    </Link>{" "}
+                  </li>
+                  <li className="">
+                    <Link
+                      className="flex p-2 justify-between hover:bg-white/10"
+                      to={"/account"}>
+                      <span>Profile</span>{" "}
+                    </Link>{" "}
+                  </li>
+                  <li className="">
+                    <Link
+                      className="flex p-2 justify-between hover:bg-white/10"
+                      to={"/account"}>
+                      <span>Upgrade to Premium</span> <FaExternalLinkAlt />
+                    </Link>{" "}
+                  </li>
+                  <li className="">
+                    <Link
+                      className="flex p-2 justify-between hover:bg-white/10"
+                      to={"/account"}>
+                      <span>Settings</span>
+                    </Link>{" "}
+                  </li>
+                  <li className="">
+                    <button
+                      onClick={logoutUser}
+                      className="p-2 w-full text-left border-t border-white/10  hover:bg-white/10">
+                      <span>Log out</span>
+                    </button>{" "}
+                  </li>
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </header>
+  );
+}
