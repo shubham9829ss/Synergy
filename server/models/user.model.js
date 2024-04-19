@@ -53,9 +53,9 @@ userSchema.methods.generateAccessToken = function () {
       email: this.email,
       username: this.username,
     },
-    import.meta.env.ACCESS_TOKEN_SECRET,
+    process.env.ACCESS_TOKEN_SECRET,
     {
-      expiresIn: import.meta.env.ACCESS_TOKEN_EXPIRY,
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
   );
 };

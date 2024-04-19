@@ -2,12 +2,13 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   songs: [],
-  totalSongs: 0,
-  songsCount: 0,
-  pageNumber: 0,
   loading: false,
   error: null,
-  success: false,
+  filteredSongsCount: 1,
+  totalSongs: 3,
+  resultPerPage: 2,
+  hasMore: true,
+  keyword: "",
 };
 
 const songSlice = createSlice({
@@ -21,22 +22,27 @@ const songSlice = createSlice({
     songsSuccess: (state, action) => {
       state.loading = false;
       state.error = null;
-      state.songs = [...state.songs, ...action.payload];
-      state.success = true;
+      state.songs = action.payload.songs;
+      state.hasMore = action.payload.hasMore;
+      state.resultPerPage = action.payload.resultPerPage;
+      state.totalSongs = action.payload.totalSongs;
+      state.filteredSongsCount = action.payload.filteredSongsCount;
     },
     songsFail: (state, action) => {
       state.loading = false;
       state.error = action.payload;
-      state.success = false;
     },
     resetSongs: (state) => {
       state.loading = false;
       state.error = null;
       state.songs = [];
     },
+    setKeyword: (state, action) => {
+      state.keyword = action.payload;
+    },
   },
 });
 
-export const { songsRequest, songsSuccess, songsFail, resetSongs } =
+export const { songsRequest, songsSuccess, songsFail, resetSongs, setKeyword } =
   songSlice.actions;
 export default songSlice.reducer;

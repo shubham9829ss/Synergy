@@ -5,26 +5,42 @@ class ApiFeatures {
   }
 
   search() {
-    let searching = {};
-    if (this.queryStr.lastSongId) {
-      searching._id = { $gt: this.queryStr.lastSongId };
-    }
-    if (this.queryStr.keyword && this.queryStr.keyword.length > 0) {
-      searching.title = { $regex: this.queryStr.keyword, $options: "i" };
-    }
-
-    this.query = this.query.find({ ...searching }).limit(4);
+    const keyword = this.queryStr.keyword
+      ? {
+          songTitle: {
+            $regex: this.queryStr.keyword.trim(),
+            $options: "i",
+          },
+        }
+      : {};
+    this.query = this.query.find({ ...keyword });
     return this;
   }
 
-  // filter() {
-  //   const queryCopy = { ...this.queryStr };
-  //   const removeFields = ["keyword", "page", "limit"];
-  //   removeFields.forEach((key) => delete queryCopy[key]);
-  //   let queryStr = JSON.stringify(queryCopy);
-  //   this.query = this.query.find(JSON.parse(queryStr));
-  //   return this;
-  // }
+  filter() {
+    const queryCopy = { ...this.queryStr };
+    //   Removing some fields for category
+    const removeFields = ["keyword", "page", "limit"];
+
+    removeFields.forEach((key) => delete queryCopy[key]);
+
+    // Filter For Price and Rating
+    let queryStr = JSON.stringify(queryCopy);
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (key) => `$${key}`);
+
+    this.query = this.query.find(JSON.parse(queryStr));
+    return this;
+  }
+
+  pagination(resultPerPage) {
+    const currentPage = Number(this.queryStr.currentPage) || 1;
+
+    const songsInPage = resultPerPage * currentPage;
+
+    this.query = this.query.limit(songsInPage);
+
+    return this;
+  }
 }
 
 export default ApiFeatures;

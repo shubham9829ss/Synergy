@@ -1,17 +1,26 @@
 .card {
   background-color: var(--card_sec_bg);
+  position: relative; /* Enable positioning for the play button */
+  transition: background-color 0.2s ease-in; /* Add transition for background color */
 }
+
 .card:hover {
   background: var(--card_bg);
   cursor: pointer;
-  transition: all 0.2s ease-in;
 }
 
 .play_btn {
-  display: none !important;
+  display: flex; /* Change initial display to flex for better positioning */
+  justify-content: center;
+  align-items: center;
+  position: absolute; /* Position the button absolutely within the card */
+  bottom: 0; /* Center the button vertically */
+  right: 0; /* Center the button horizontally */
+  /* transform: translate(-50%, -50%); Offset the button to center visually */
+  opacity: 0; /* Initial opacity: hidden */
+  transition: opacity 0.2s ease-in; /* Add transition for opacity */
 }
 
 .card:hover .play_btn {
-  display: block !important;
-  transition: all 0.3s ease-in;
+  opacity: 1; /* Opacity: visible on hover */
 }

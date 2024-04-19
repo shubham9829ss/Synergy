@@ -7,47 +7,23 @@ const localImageAddress =
   "https://d2n9ha3hrkss16.cloudfront.net/uploads/stage/stage_image/174055/optimized_product_thumb_stage.jpg";
 
 const getAllSongs = asyncHandler(async (req, res) => {
-  const apiFeatures = new ApiFeatures(Song.find(), req.query).search();
+  const resultPerPage = 4;
+  const totalSongs = await Song.countDocuments();
+  let query = req.query;
+  let apiFeatures = new ApiFeatures(Song.find(), query).search();
+  apiFeatures.pagination(resultPerPage);
   let songs = await apiFeatures.query;
-  console.log(songs);
-  // Prepare query parameters for filtering
-  // const filters = {};
-  // if (query) {
-  //   filters.title = { $regex: query, $options: "i" }; // Example: Searching by title
-  // }
-
-  // // Prepare sorting parameters
-  // const sortOptions = {};
-  // if (sortBy) {
-  //   sortOptions[sortBy] = sortType === "desc" ? -1 : 1; // Example: Sorting by a field
-  // }
-
-  // // Pagination options
-  // const options = {
-  //   limit: parseInt(limit),
-  //   sort: sortOptions,
-  // };
-
-  // // If lastSongId is provided, use it for filtering
-  // if (lastSongId) {
-  //   filters._id = { $gt: lastSongId }; // Find songs with IDs greater than lastSongId
-  // }
-
-  // // Fetch songs based on the filters, sorting, and pagination
-  // // const songs = await Song.find(filters, null, options);
-  // let songs;
-  // if (query === "") {
-  //   // If query is null, return all songs without filtering
-  //   songs = await Song.find({}, null, options);
-  //   console.log(songs);
-  // } else {
-  //   // Otherwise, apply the filters
-  //   songs = await Song.find(filters, null, options);
-  // }
-
-  res
-    .status(200)
-    .json({ success: true, data: songs, hasMore: songs.length === 4 });
+  // console.log(songs);
+  let filteredSongsCount = songs.length;
+  let hasMore = totalSongs === filteredSongsCount ? false : true;
+  res.status(200).json({
+    success: true,
+    songs,
+    filteredSongsCount,
+    totalSongs,
+    hasMore,
+    resultPerPage,
+  });
 });
 
 const createSong = asyncHandler(async (req, res, next) => {
@@ -68,14 +44,14 @@ const createSong = asyncHandler(async (req, res, next) => {
   if (songThumbnailLocalPath) {
     songThumbnail = await uploadOnCloudinary(songThumbnailLocalPath);
   }
-  console.log(songData);
+
   const song = await Song.create({
     songFile: songData.url,
     songThumbnail: songThumbnail?.url || localImageAddress,
     songTitle,
     songArtist,
     songCategory,
-    songDuration: songData.duration.toFixed(0),
+    songDuration: parseInt(songData.duration),
   });
   await song.save();
   return res.status(201).json({ song, message: "song created successfully" });

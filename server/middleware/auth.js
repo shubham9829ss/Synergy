@@ -7,10 +7,7 @@ export const isAuthorized = async (req, res, next) => {
     const access_token = req.cookies?.access_token;
     if (!access_token)
       return res.json({ success: false, messase: "you are not authorized" });
-    const decoded = jwt.verify(
-      access_token,
-      import.meta.env.ACCESS_TOKEN_SECRET
-    );
+    const decoded = jwt.verify(access_token, process.env.ACCESS_TOKEN_SECRET);
     req.userId = decoded._id;
     next();
   } catch (error) {

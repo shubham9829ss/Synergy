@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  masterSong: {},
+  masterSong: { mp3: null },
   isPlaying: false,
   error: null,
 };
@@ -13,7 +13,10 @@ const controlSlice = createSlice({
     playStart: (state, action) => {
       state.isPlaying = true;
       state.error = null;
-      state.masterSong = action.payload;
+      state.masterSong = {
+        ...action.payload,
+        mp3: new Audio(action.payload.songFile),
+      };
     },
     playStop: (state) => {
       state.isPlaying = false;

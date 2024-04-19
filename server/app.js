@@ -9,11 +9,12 @@ import userRouter from "./routes/user.routes.js";
 import playlistRouter from "./routes/playlist.routes.js";
 import songRouter from "./routes/song.routes.js";
 import mongoose, { connect } from "mongoose";
+
+const app = express();
 dotenv.config({
   path: "./.env",
 });
 
-const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
@@ -42,13 +43,13 @@ app.use("/api/songs", songRouter);
 
 app.use(error);
 
-// import.meta.on("unhandledRejection", (err) => {
+// process.on("unhandledRejection", (err) => {
 //   console.log(`error: ${err.message}`);
 //   console.log(`shutting down the server due to unhandled promise rejection`);
-//   server.close(() => import.meta.exit(1));
+//   server.close(() => process.exit(1));
 // });
 
-// import.meta.on("uncaughtException", (err) => {
+// process.on("uncaughtException", (err) => {
 //   console.log(`error: ${err.message}`);
 //   console.log(`shutting down the server due to unhandled promise rejection`);
 // });

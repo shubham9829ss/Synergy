@@ -43,31 +43,33 @@ function SongBar() {
   };
 
   const addToLiked = async () => {
-    let data = JSON.stringify({
-      song_mp3: masterSong.mp3.src,
-      song_title: masterSong.title,
-      song_artist: masterSong.artist,
-      song_thumbnail: masterSong.img,
-    });
-    const res = await fetch("http://localhost:5001/api/playlist/like", {
-      method: "POST",
-      headers: {
-        "Cotent-Type": "application/json",
-        token: localStorage.getItem("token"),
-      },
-      body: data,
-    });
+    // let data = JSON.stringify({
+    //   song_mp3: masterSong.mp3.src,
+    //   song_title: masterSong.title,
+    //   song_artist: masterSong.artist,
+    //   song_thumbnail: masterSong.img,
+    // });
+    // const res = await fetch("/api/playlist", {
+    //   method: "POST",
+    //   headers: {
+    //     "Cotent-Type": "application/json",
+    //     token: localStorage.getItem("token"),
+    //   },
+    //   body: data,
+    // });
 
-    await res.json();
+    // await res.json();
+    console.log("add to like function todo");
   };
 
   useEffect(() => {
-    if (masterSong && masterSong.mp3) {
-      setDuration(formatTime(masterSong.mp3?.duration));
+    if (masterSong.mp3) {
+      setDuration(formatTime(masterSong.songDuration));
+      console.log(masterSong);
       if (isPlaying) {
-        masterSong?.mp3?.play();
+        masterSong.mp3?.play();
       } else {
-        masterSong?.mp3?.pause();
+        masterSong.mp3?.pause();
       }
     }
     if (isPlaying) {
@@ -75,7 +77,7 @@ function SongBar() {
         if (masterSong.mp3.duration > 0) {
           setProgress(
             Math.round(
-              (masterSong.mp3.currentTime / masterSong.mp3.duration) * 100
+              (masterSong.mp3.currentTime / masterSong.songDuration) * 100
             )
           );
           setCurrTime(formatTime(masterSong.mp3.currentTime));
@@ -106,7 +108,7 @@ function SongBar() {
   const changeProgress = (e) => {
     setProgress(e.target.value);
     masterSong.mp3.currentTime =
-      (e.target.value / 100) * masterSong.mp3.duration;
+      (e.target.value / 100) * masterSong.songDuration;
   };
 
   const [volume, setVolume] = useState(30);
@@ -131,7 +133,7 @@ function SongBar() {
     if (songIdx <= 0) return;
     resetEverything();
     if (masterSong.mp3) {
-      masterSong?.mp3?.pause();
+      masterSong.mp3.pause();
       masterSong.mp3.currentTime = 0;
     }
     setSongIdx((prevstate) => prevstate - 1);
@@ -141,7 +143,7 @@ function SongBar() {
     if (songIdx >= 5 - 1) return;
     resetEverything();
     if (masterSong.mp3) {
-      masterSong?.mp3?.pause();
+      masterSong.mp3.pause();
       masterSong.mp3.currentTime = 0;
     }
     setSongIdx((prevstate) => prevstate + 1);
