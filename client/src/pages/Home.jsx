@@ -1,7 +1,8 @@
 import Layout from "../Layout";
+import "./Home.css";
 import { FaAngleLeft, FaAngleRight, FaSearch, FaUser } from "react-icons/fa";
-import Card from "../components/Card/Card";
-import SongBar from "../components/MasterBar/SongBar";
+import Card from "../components/Card";
+import SongBar from "../components/SongBar";
 import { Link } from "react-router-dom";
 import Loader from "../components/Loading";
 import Navbar from "./Navbar";
@@ -56,19 +57,19 @@ const Home = () => {
           <span>Show All</span>
         </div>
         {
-          <div className="min-h-screen">
+          <div className="min-h-screen ">
             <InfiniteScroll
               dataLength={filteredSongsCount}
               next={nextPage}
-              hasMore={hasMore}>
+              hasMore={hasMore}
+              loader={hasMore && loading && <Loader />}
+              scrollThreshold={0.9}>
               {
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2 md:gap-4">
+                <div className="cardItem">
                   {songs &&
                     songs.length > 0 &&
                     songs.map((song, i) => (
-                      <div key={song._id}>
-                        <Card idx={i} song={song} />
-                      </div>
+                      <Card idx={i} key={song._id} song={song} />
                     ))}
                 </div>
               }
@@ -82,7 +83,7 @@ const Home = () => {
           <span>Show All</span>
         </div>
       </div>
-      {/* <SongBar /> */}
+      <SongBar />
     </Layout>
   );
 };

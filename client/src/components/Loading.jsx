@@ -1,11 +1,13 @@
 import React from "react";
+import { ThreeDots } from "react-loader-spinner";
 
-const Loading = () => {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="loader ease-linear rounded-full border-8 border-t-8 border-gray-200 h-32 w-32"></div>
-    </div>
-  );
-};
+const Loader = () => (
+  <ThreeDots
+    color="#somecolor"
+    height={80}
+    width={80}
+    timeout={3000} //3 secs
+  />
+);
 
-export default Loading;
+export default Loader;

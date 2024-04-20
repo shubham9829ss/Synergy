@@ -1,9 +1,12 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  masterSong: { mp3: null },
+  masterSong: {},
   isPlaying: false,
   error: null,
+  checkNewSong: false,
+  repeat: false,
+  shuffle: false,
 };
 
 const controlSlice = createSlice({
@@ -13,9 +16,9 @@ const controlSlice = createSlice({
     playStart: (state, action) => {
       state.isPlaying = true;
       state.error = null;
+      state.checkNewSong = true;
       state.masterSong = {
         ...action.payload,
-        mp3: new Audio(action.payload.songFile),
       };
     },
     playStop: (state) => {
@@ -31,9 +34,26 @@ const controlSlice = createSlice({
     pauseBar: (state) => {
       state.isPlaying = false;
     },
+    setCheckNewSong: (state, action) => {
+      state.checkNewSong = action.payload;
+    },
+    setRepeat: (state) => {
+      state.repeat = !state.repeat;
+    },
+    setShuffle: (state) => {
+      state.shuffle = !state.shuffle;
+    },
   },
 });
 
-export const { playStart, playStop, playError, playBar, pauseBar } =
-  controlSlice.actions;
+export const {
+  playStart,
+  playStop,
+  playError,
+  playBar,
+  pauseBar,
+  setCheckNewSong,
+  setRepeat,
+  setShuffle,
+} = controlSlice.actions;
 export default controlSlice.reducer;

@@ -11,7 +11,7 @@ import {
   myPlaylistSuccess,
   myPlaylistFail,
   myPlaylistRequest,
-} from "../../redux/playlistSlice.js";
+} from "../redux/playlistSlice.js";
 
 const getPlaylists = async (dispatch) => {
   try {
@@ -54,7 +54,7 @@ const Sidebar = () => {
   }, [dispatch, isAuthenticated]);
 
   return (
-    <div className="w-1/4 fixed left-0 mt-2 top-0 sidebar">
+    <div className="left-0 mt-2 top-0 sidebar sm:w-1/4">
       <div className="nav tertiary_bg rounded-lg p-6">
         <Link to={"/"} className="flex items-center gap-6">
           <BiSolidHome className="font-bold text-2xl" />

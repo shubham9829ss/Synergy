@@ -1,5 +1,5 @@
 import "./SongBar.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { AiOutlineHeart, AiOutlinePlaySquare } from "react-icons/ai";
 import { IoMdSkipBackward, IoMdSkipForward } from "react-icons/io";
@@ -11,17 +11,25 @@ import { HiSpeakerXMark, HiSpeakerWave } from "react-icons/hi2";
 import { BsArrowsAngleContract, BsSpeakerFill } from "react-icons/bs";
 
 import {
+  playError,
   playStart,
   playStop,
-  playError,
   playBar,
   pauseBar,
-} from "../../redux/controlSlice.js";
-import { useGlobalContext } from "../../Context.jsx";
+  setCheckNewSong,
+  setRepeat,
+  setShuffle,
+} from "../redux/controlSlice.js";
+import { useGlobalContext } from "../Context.jsx";
 
 function SongBar() {
   const dispatch = useDispatch();
-  const { masterSong, isPlaying } = useSelector((state) => state.mainSong);
+  let audioRef = useRef(null);
+  const [newSongArray, setNewSongArray] = useState([]);
+  const { songs, filteredSongsCount } = useSelector((state) => state.songs);
+  const { masterSong, isPlaying, checkNewSong, repeat, shuffle } = useSelector(
+    (state) => state.mainSong
+  );
   const {
     progress,
     setProgress,
@@ -43,44 +51,62 @@ function SongBar() {
   };
 
   const addToLiked = async () => {
-    // let data = JSON.stringify({
-    //   song_mp3: masterSong.mp3.src,
-    //   song_title: masterSong.title,
-    //   song_artist: masterSong.artist,
-    //   song_thumbnail: masterSong.img,
-    // });
-    // const res = await fetch("/api/playlist", {
-    //   method: "POST",
-    //   headers: {
-    //     "Cotent-Type": "application/json",
-    //     token: localStorage.getItem("token"),
-    //   },
-    //   body: data,
-    // });
+    //   // let data = JSON.stringify({
+    //   //   song_mp3: masterSong.mp3.src,
+    //   //   song_title: masterSong.title,
+    //   //   song_artist: masterSong.artist,
+    //   //   song_thumbnail: masterSong.img,
+    //   // });
+    //   // const res = await fetch("/api/playlist", {
+    //   //   method: "POST",
+    //   //   headers: {
+    //   //     "Cotent-Type": "application/json",
+    //   //     token: localStorage.getItem("token"),
+    //   //   },
+    //   //   body: data,
+    //   // });
 
-    // await res.json();
+    //   // await res.json();
     console.log("add to like function todo");
   };
+  useEffect(() => {
+    if (audioRef && audioRef.current) {
+      if (audioRef.current.src !== masterSong?.songFile) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.pause();
+        resetEverything();
+        audioRef.current = new Audio(masterSong?.songFile);
+      }
+    } else {
+      audioRef.current = new Audio(masterSong?.songFile);
+    }
+    dispatch(setCheckNewSong(false));
+  }, [dispatch, checkNewSong]);
 
   useEffect(() => {
-    if (masterSong.mp3) {
+    if (audioRef?.current) {
       setDuration(formatTime(masterSong.songDuration));
-      console.log(masterSong);
       if (isPlaying) {
-        masterSong.mp3?.play();
+        audioRef.current?.play();
+        if (
+          repeat === false &&
+          audioRef.current.currentTime > masterSong.songDuration - 2
+        ) {
+          forwardSong();
+        }
       } else {
-        masterSong.mp3?.pause();
+        audioRef.current?.pause();
       }
     }
     if (isPlaying) {
       let intervalId = setInterval(() => {
-        if (masterSong.mp3.duration > 0) {
+        if (audioRef?.current?.duration > 0) {
           setProgress(
             Math.round(
-              (masterSong.mp3.currentTime / masterSong.songDuration) * 100
+              (audioRef.current.currentTime / masterSong.songDuration) * 100
             )
           );
-          setCurrTime(formatTime(masterSong.mp3.currentTime));
+          setCurrTime(formatTime(audioRef.current.currentTime));
         }
       }, 1000);
       return () => clearInterval(intervalId);
@@ -107,14 +133,14 @@ function SongBar() {
 
   const changeProgress = (e) => {
     setProgress(e.target.value);
-    masterSong.mp3.currentTime =
+    audioRef.current.currentTime =
       (e.target.value / 100) * masterSong.songDuration;
   };
 
   const [volume, setVolume] = useState(30);
   const changeVolume = (e) => {
     setVolume(e.target.value);
-    masterSong.mp3.volume = e.target.value / 100;
+    audioRef.current.volume = e.target.value / 100;
   };
 
   const mouseEnter = () => {
@@ -130,26 +156,61 @@ function SongBar() {
     document.querySelector("#volume").style.background = "#fff";
   };
   const backwardSong = () => {
-    if (songIdx <= 0) return;
-    resetEverything();
-    if (masterSong.mp3) {
-      masterSong.mp3.pause();
-      masterSong.mp3.currentTime = 0;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
-    setSongIdx((prevstate) => prevstate - 1);
-    dispatch(playSong(songs[songIdx - 1]));
+    resetEverything();
+    let newSongIdx = (songIdx - 1 + filteredSongsCount) % filteredSongsCount;
+    setSongIdx(newSongIdx);
+    if (shuffle === true) {
+      if (!Array.isArray(newSongArray)) {
+        handleShuffle();
+      }
+      let randomIndex = Math.floor(Math.random() * newSongArray);
+      newSongArray.filter((item) => item !== randomIndex);
+      dispatch(playStart(songs[randomIndex]));
+    } else {
+      dispatch(playStart(songs[newSongIdx]));
+    }
   };
   const forwardSong = () => {
-    if (songIdx >= 5 - 1) return;
-    resetEverything();
-    if (masterSong.mp3) {
-      masterSong.mp3.pause();
-      masterSong.mp3.currentTime = 0;
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
     }
-    setSongIdx((prevstate) => prevstate + 1);
-    dispatch(playSong(songs[songIdx + 1]));
+    resetEverything();
+    let newSongIdx = (songIdx + 1 + filteredSongsCount) % filteredSongsCount;
+    setSongIdx(newSongIdx);
+    if (shuffle === true) {
+      if (!Array.isArray(newSongArray)) {
+        handleShuffle();
+      }
+      let randomIndex = Math.floor(Math.random() * newSongArray);
+      newSongArray.filter((item) => item !== randomIndex);
+      dispatch(playStart(songs[randomIndex]));
+    } else {
+      dispatch(playStart(songs[newSongIdx]));
+    }
   };
 
+  const handleRepeat = () => {
+    dispatch(setRepeat());
+  };
+  const handleShuffle = () => {
+    if (shuffle) {
+      setNewSongArray([]);
+    } else {
+      tempArray = [];
+      for (let i = 0; i < filteredSongsCount; i++) {
+        tempArray.push(i);
+      }
+      setNewArray(tempArray);
+    }
+    dispatch(setShuffle());
+    forwardSong();
+  };
+  const [newArray, setNewArray] = useState([]);
   return (
     <div className="fixed w-full flex px-2 items-center justify-between bottom-0 left-0 h-20 bg-black">
       <div className="w-2/12">
@@ -176,8 +237,16 @@ function SongBar() {
       </div>
       <div className="w-5/12">
         <div className="flex justify-center items-center mb-2 gap-6">
-          <BiShuffle />
-          <IoMdSkipBackward onClick={backwardSong} />
+          <BiShuffle
+            className={`text-white hover:cursor-pointer hover:text-gray-400 ${
+              shuffle ? "text-gray-400" : ""
+            }`}
+            onClick={() => handleShuffle()}
+          />
+          <IoMdSkipBackward
+            className={`hover:cursor-pointer text-white hover:text-gray-400`}
+            onClick={() => backwardSong()}
+          />
           {isPlaying ? (
             <button
               onClick={handleMaster}
@@ -191,8 +260,16 @@ function SongBar() {
               <FaPlay className="text-black text-lg" />
             </button>
           )}
-          <IoMdSkipForward onClick={forwardSong} />
-          <BiRepeat />
+          <IoMdSkipForward
+            className={`hover:cursor-pointer text-white hover:text-gray-400`}
+            onClick={() => forwardSong()}
+          />
+          <BiRepeat
+            className={`hover:cursor-pointer text-white hover:text-gray-400 ${
+              repeat ? "text-gray-400" : ""
+            }`}
+            onClick={() => handleRepeat()}
+          />
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs">{currTime}</span>
@@ -202,11 +279,11 @@ function SongBar() {
               name=""
               min={0}
               value={progress}
-              disabled={!masterSong.mp3}
+              disabled={!audioRef.current}
               onChange={changeProgress}
               onMouseEnter={mouseEnter}
               onMouseLeave={mouseLeave}
-              className="w-full block"
+              className="w-full block hover:cursor-pointer"
               max={100}
             />
 
@@ -230,9 +307,9 @@ function SongBar() {
             onMouseEnter={enterVolume}
             onMouseLeave={leaveVolume}
             value={volume}
-            disabled={!masterSong.mp3}
+            disabled={!audioRef.current}
             onChange={changeVolume}
-            className="w-full block"
+            className="w-full block hover:cursor-pointer"
             max={100}
           />
           <div id="volume" className={`active_progress w-[${volume}%]`}></div>

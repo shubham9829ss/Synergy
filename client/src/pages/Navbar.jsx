@@ -40,8 +40,14 @@ export default function Navbar() {
     }
   };
 
+  const style = {
+    background: "rgb(249,250,228)",
+    background:
+      "linear-gradient(90deg, rgba(14, 3, 47, 1) 0%, rgba(57, 80, 107, 1) 50%, rgba(24, 72, 129, 1) 100%)",
+    display: "fixed",
+  };
   return (
-    <div>
+    <div style={style}>
       <header className="flex sticky top-0 z-50 justify-between items-center rounded-[6px] px-8 ml-2 mt-2 secondary_bg">
         <div className="flex items-center w-1/2">
           <FaAngleLeft className="bg-white/10 text-3xl p-1 rounded-[50%]" />

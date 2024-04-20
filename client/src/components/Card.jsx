@@ -1,23 +1,22 @@
 import "./Card.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaPause, FaPlay } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { playStart, playStop, playError } from "../../redux/controlSlice.js";
-import { useGlobalContext } from "../../Context.jsx";
+import {
+  playStart,
+  playStop,
+  playError,
+  // setCheckNewSong,
+} from "../redux/controlSlice.js";
+import { useGlobalContext } from "../Context.jsx";
 
 export default function Card({ song, idx }) {
   const dispatch = useDispatch();
+  // console.log("id: ", idx);
   const { masterSong, isPlaying } = useSelector((state) => state.mainSong);
   const { resetEverything, setSongIdx } = useGlobalContext();
-
   const handlePlay = (song) => {
-    console.log("handlePlay: ", song);
     setSongIdx(idx);
-    if (isPlaying) {
-      masterSong.mp3.currentTime = 0;
-      masterSong.mp3.pause();
-      resetEverything();
-    }
     dispatch(playStart(song));
   };
 
