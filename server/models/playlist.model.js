@@ -10,11 +10,9 @@ const playlistSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    singers: [
-      {
-        type: String,
-      },
-    ],
+    description: {
+      type: String,
+    },
     songs: [
       {
         type: mongoose.Schema.Types.ObjectId,

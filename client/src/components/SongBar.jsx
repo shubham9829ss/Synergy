@@ -90,7 +90,7 @@ function SongBar() {
         audioRef.current?.play();
         if (
           repeat === false &&
-          audioRef.current.currentTime > masterSong.songDuration - 2
+          audioRef.current?.currentTime > masterSong?.songDuration - 2
         ) {
           forwardSong();
         }

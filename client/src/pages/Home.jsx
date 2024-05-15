@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { songsRequest, songsSuccess, songsFail } from "../redux/songSlice";
 import InfiniteScroll from "react-infinite-scroll-component";
-
 const fetchMoreSongs = async (dispatch, currentPage, keyword = "") => {
   try {
     dispatch(songsRequest());
@@ -47,7 +46,7 @@ const Home = () => {
     fetchSongs();
   }, [dispatch, currentPage, keyword]);
   return (
-    <Layout>
+    <Layout playlistCreate={() => setPlaylistCreate(true)}>
       <Navbar />
       <div className="tertiary_bg ml-2 p-4 home">
         <div className="flex justify-between items-center mb-4 pt-4">

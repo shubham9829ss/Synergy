@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { BiSolidHome, BiLibrary } from "react-icons/bi";
 import { FiSearch } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
-import axios from "axios";
-import { TbWorld } from "react-icons/tb";
 import "./Sidebar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,29 +28,106 @@ const getPlaylists = async (dispatch) => {
   }
 };
 
-const Sidebar = () => {
-  const navigate = useNavigate();
+const Sidebar = ({ updatePlaylist, setData }) => {
   const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector((state) => state.account);
+  const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.account);
   const [playlists, setPlaylists] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showDropDown, setShowDropDown] = useState(false);
+  const [playlistCreate, setPlaylistCreate] = useState(false);
+  const [playlistId, setPlaylistId] = useState(null);
+  const [x, setX] = useState(0);
+  const [y, setY] = useState(0);
+
+  const handleRightClick = (event, playlistId) => {
+    event.preventDefault();
+    setShowDropDown(true);
+    setPlaylistId(playlistId);
+    const x = 200;
+    const y = event.clientY + window.scrollY;
+    setX(x);
+    setY(y);
+  };
+  const handleUpdatePlaylist = () => {
+    const data = playlists.find((item) => item._id === playlistId);
+    const formData = {
+      title: data.title,
+      description: data.description,
+      playlistId: data._id,
+    };
+    setData(formData);
+    updatePlaylist();
+  };
+  const handleDelete = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/playlist/${playlistId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const updatedPlaylists = playlists.filter((p) => p._id !== playlistId);
+      setPlaylists(updatedPlaylists);
+      setPlaylistId(null);
+      setShowDropDown(false);
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         if (isAuthenticated) {
           const data = await getPlaylists(dispatch);
           if (data) {
             setPlaylists(data);
           }
         }
+        setLoading(false);
       } catch (error) {
         console.log(error);
+        setLoading(false);
+      }
+    };
+    fetchData();
+    setPlaylistCreate(false);
+  }, [dispatch, isAuthenticated, playlistCreate]);
+
+  const createPlaylist = async () => {
+    try {
+      setPlaylistCreate(true);
+      const res = await fetch("/api/playlist/");
+      const data = await res.json();
+      if (data.success === false) {
+        throw new Error("playlsit not create");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handlePlaylistItem = (playlistId) => {
+    navigate(`/playlist/${playlistId}`);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const playlistDiv = document.getElementById("playlist");
+      if (playlistDiv && !playlistDiv.contains(event.target)) {
+        setShowDropDown(false);
       }
     };
 
-    fetchData();
-  }, [dispatch, isAuthenticated]);
+    window.addEventListener("click", handleClickOutside);
 
+    return () => {
+      window.removeEventListener("click", handleClickOutside);
+    };
+  }, [showDropDown]);
   return (
     <div className="left-0 mt-2 top-0 sidebar sm:w-1/4">
       <div className="nav tertiary_bg rounded-lg p-6">
@@ -71,7 +146,10 @@ const Sidebar = () => {
             <BiLibrary className="font-bold text-xl" />
             <span>Your library</span>
           </div>
-          <button className="hover:bg-black/25 rounded-[50%] p-2">
+          <button
+            onClick={createPlaylist}
+            className="hover:bg-black/25 rounded-[50%] p-2 hover:cursor-pointer"
+            disabled={loading}>
             <FaPlus className="font-bold text-xl" />
           </button>
         </div>
@@ -87,13 +165,18 @@ const Sidebar = () => {
             Artists
           </Link>
         </div>
-        <div className="my-6 px-2">
+        <div className="my-6 px-2" id="playlist">
           {playlists &&
             playlists.length > 0 &&
             playlists.map((p) => {
               return (
-                <div key={p._id} className="flex gap-4 my-2">
-                  <div>
+                <div
+                  key={p._id}
+                  id={p._id}
+                  onContextMenu={(event) => handleRightClick(event, p._id)}
+                  onClick={() => handlePlaylistItem(p._id)}
+                  className="flex gap-4 my-2">
+                  <div id="image">
                     <img
                       src="/assets/Arijit-1.jpg"
                       width={50}
@@ -101,17 +184,38 @@ const Sidebar = () => {
                       alt=""
                     />
                   </div>
-                  <div>
+                  <div id="details">
                     <h3 className="text-base font-medium mb-2">{p.title}</h3>
                     <p className="text-sm text-white/80">
-                      Playlist
-                      <span> . {p.songs.length} Songs</span>
+                      {p.songs.length} Songs
                     </p>
                   </div>
                 </div>
               );
             })}
         </div>
+        {showDropDown && (
+          <div
+            className={`absolute dropdown bg-gray-800 text-xs border-2 w-7rem h-2rem p-1`}
+            style={{ top: `${y}px`, left: `${x}px` }}>
+            <ul className="">
+              <li className="">
+                <button
+                  className="p-2 w-full text-left border-white/10  hover:bg-white/10"
+                  onClick={handleUpdatePlaylist}>
+                  <span>Edit Details</span>
+                </button>
+              </li>
+              <li className="">
+                <button
+                  className="p-2 w-full text-left border-white/10  hover:bg-white/10"
+                  onClick={handleDelete}>
+                  <span>Delete Playlist</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

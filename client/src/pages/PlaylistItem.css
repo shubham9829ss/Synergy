@@ -1,0 +1,39 @@
+.container {
+  overflow-x: auto;
+  height: 100vh;
+  display: table;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  box-shadow: 0 0 10px rgba(215, 152, 15, 0.886);
+  border-radius: 10px;
+  border-collapse: collapse;
+  margin: 0;
+  background-color: white;
+}
+
+th {
+  padding: 1rem;
+  background-color: #3498db; /* Adjusted color */
+  color: white;
+  text-align: left;
+}
+
+th:first-of-type {
+  border-top-left-radius: 10px;
+}
+
+th:last-of-type {
+  border-top-right-radius: 10px;
+}
+
+tr:hover {
+  background-color: rgba(14, 17, 218, 0.669);
+}
+
+td {
+  padding: 1rem;
+  color: black; /* Set text color to black */
+}

@@ -21,19 +21,15 @@ export const getPlaylists = asyncHandler(async (req, res, next) => {
 });
 
 const createPlaylist = asyncHandler(async (req, res, next) => {
-  const { title, singers } = req.body;
+  // const { title, description = "" } = req.body;
   const userId = req.userId;
-  if (!userId)
-    return next(
-      new ErrorHandler(
-        "userId not found, check auth.js for createPlaylist",
-        404
-      )
-    );
+  const playlistCount = await Playlist.countDocuments({ userId });
+  const title = `my playlist#${playlistCount}`;
+  const description = "";
   const playlist = await Playlist.create({
     userId,
     title,
-    singers,
+    description,
   });
   await playlist.save({ validateBeforeSave: false });
   return res.status(201).json({
@@ -41,8 +37,6 @@ const createPlaylist = asyncHandler(async (req, res, next) => {
     message: "playlist created successfully",
     playlist,
   });
-
-  //TODO: create playlist
 });
 
 const getUserPlaylists = asyncHandler(async (req, res, next) => {
@@ -63,7 +57,6 @@ const getPlaylistById = asyncHandler(async (req, res, next) => {
   return res
     .status(200)
     .json({ success: true, message: "playlistById send", playlist });
-  //TODO: get playlist by id
 });
 
 const addSongToPlaylist = asyncHandler(async (req, res) => {
@@ -77,7 +70,8 @@ const addSongToPlaylist = asyncHandler(async (req, res) => {
         404
       )
     );
-  playlist.songs.push(song);
+  const dateAdded = new Date();
+  playlist.songs.push({ song, dateAdded });
   await playlist.save({ validateBeforeSave: false });
   return res
     .status(200)
@@ -119,12 +113,13 @@ const deletePlaylist = asyncHandler(async (req, res) => {
 
 const updatePlaylist = asyncHandler(async (req, res, next) => {
   const { playlistId } = req.params;
-  const { title } = req.body;
-  const playlist = Playlist.findByIdAndUpdate(
+  const { title, description } = req.body;
+  const playlist = await Playlist.findByIdAndUpdate(
     playlistId,
     {
       $set: {
         title,
+        description,
       },
     },
     { new: true }
@@ -133,8 +128,6 @@ const updatePlaylist = asyncHandler(async (req, res, next) => {
   return res
     .status(200)
     .json({ message: "update playlist successfully", playlist, success: true });
-
-  //TODO: update playlist
 });
 
 export {

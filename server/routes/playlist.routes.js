@@ -16,7 +16,7 @@ router.use(isAuthorized);
 
 router.route("/user").get(getUserPlaylists);
 
-router.route("/").post(createPlaylist);
+router.route("/").get(createPlaylist);
 
 router
   .route("/:playlistId")
