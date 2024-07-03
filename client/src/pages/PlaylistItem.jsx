@@ -4,12 +4,9 @@ import "./PlaylistItem.css";
 import { useTable, useSortBy } from "react-table";
 import { useParams } from "react-router-dom";
 import { BsThreeDots } from "react-icons/bs";
-import { IoMdArrowDropright } from "react-icons/io";
-import { AiOutlinePlus } from "react-icons/ai";
-import { RiDeleteBin7Line } from "react-icons/ri";
-import { MdOutlinePersonSearch } from "react-icons/md";
-import { IoIosSearch } from "react-icons/io";
 import { useSelector } from "react-redux";
+import Menu from "../components/Menu";
+
 const columns = [
   {
     Header: "#",
@@ -59,12 +56,9 @@ const columns = [
 function PlaylistItem() {
   const [songs, setSongs] = useState([]);
   const { playlists } = useSelector((state) => state.playlists);
-  const [filteredPlaylists, setFilteredPlaylists] = useState([]);
   const { playlistId } = useParams();
   const [hoveredRowIndex, setHoveredRowIndex] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [showAddToPlaylist, setShowAddToPlaylist] = useState(false);
   useEffect(() => {
     try {
       const fetchData = async () => {
@@ -87,57 +81,11 @@ function PlaylistItem() {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
     useTable({ columns, data: songs }, useSortBy);
 
-  const handleAddToPlaylistClick = () => {
-    setShowAddToPlaylist(!showAddToPlaylist);
-  };
-
-  const [searchText, setSearchText] = useState("");
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const playlistDiv = document.getElementById("menu");
-      if (playlistDiv && !playlistDiv.contains(event.target)) {
-        console.log("hi");
-        setShowMenu(false);
-      }
-    };
-
-    window.addEventListener("click", handleClickOutside);
-
-    return () => {
-      window.removeEventListener("click", handleClickOutside);
-    };
-  }, [showMenu]);
-
-  const handlePlaylist = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    setShowAddToPlaylist(true);
-  };
   const handleMenuClick = (e) => {
     e.stopPropagation();
     setShowMenu(!showMenu);
   };
 
-  const handleSearchChange = (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    setSearchText(searchTerm);
-    const filtered = playlists.filter((p) =>
-      p.title.toLowerCase().includes(searchTerm)
-    );
-    setFilteredPlaylists(filtered);
-  };
-  const displayPlaylists = () => {
-    if (searchText) {
-      return filteredPlaylists.map((p, index) => (
-        <div key={index}>{p.title}</div>
-      ));
-    } else {
-      return playlists
-        .slice(0, 3)
-        .map((p, index) => <div key={index}>{p.title}</div>);
-    }
-  };
   console.log(playlists);
   return (
     <Layout>
@@ -185,81 +133,7 @@ function PlaylistItem() {
                                     className="text-xl"
                                     onClick={handleMenuClick}
                                   />
-                                  {cell.column.id === "songDuration" &&
-                                    index === hoveredRowIndex &&
-                                    showMenu && (
-                                      <div
-                                        className="absolute top-full right-0
-                                 z-10 w-[190px] ">
-                                        <div className="shadow-md rounded-md p-1 m-0 bg-slate-700 text-white">
-                                          <button
-                                            className="flex justify-between w-full text-left text-xs cursor-pointer hover:bg-gray-600 px-1 py-1 rounded-md"
-                                            onMouseEnter={() => {
-                                              setShowAddToPlaylist(true);
-                                            }}
-                                            onMouseLeave={() =>
-                                              setShowAddToPlaylist(false)
-                                            }>
-                                            <span className="flex">
-                                              <span>
-                                                <AiOutlinePlus />
-                                              </span>
-                                              <span className="pl-2">
-                                                Add to playlist
-                                              </span>
-                                            </span>
-                                            <span className="">
-                                              <IoMdArrowDropright className="text-lg mr-1" />
-                                            </span>
-                                          </button>
-                                          <button className="flex gap-x-2 w-full text-left text-xs cursor-pointer hover:bg-gray-600 rounded-md px-1 py-1">
-                                            <span>
-                                              <RiDeleteBin7Line />
-                                            </span>
-                                            <span>
-                                              Remove from this playlist
-                                            </span>
-                                          </button>
-                                          <button className="flex gap-2 w-full text-left text-xs cursor-pointer hover:bg-gray-600 rounded-md px-1 py-1">
-                                            <span>
-                                              <MdOutlinePersonSearch />
-                                            </span>
-                                            <span>Go to Artist</span>
-                                          </button>
-                                        </div>
-                                        {(showAddToPlaylist || focused) && (
-                                          <div
-                                            className="absolute top-1 right-[189px]
-                                 z-10 w-[190px] "
-                                            onMouseEnter={() => {
-                                              setFocused(true);
-                                            }}
-                                            onMouseLeave={() => {
-                                              setFocused(false);
-                                            }}>
-                                            <div className="shadow-md rounded-md p-1 m-0 bg-slate-700 text-white">
-                                              <div className="flex bg-gray-600 items-center p-1 ">
-                                                <IoIosSearch />
-                                                <input
-                                                  type="text"
-                                                  value={searchText}
-                                                  onChange={handleSearchChange}
-                                                  onClick={handlePlaylist}
-                                                  placeholder={
-                                                    "Search a playlist"
-                                                  }
-                                                  className="flex justify-between w-full text-left text-xs outline-none bg-gray-600 px-1 py-1 rounded-sm"
-                                                />
-                                              </div>
-                                              <hr />
-                                              {playlists.length > 0 && (
-                                                <div>{displayPlaylists()}</div>
-                                              )}
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
+                                  <Menu showMenu={showMenu} />
                                 </span>
                               )}
                           </div>
@@ -272,7 +146,7 @@ function PlaylistItem() {
             </tbody>
           </table>
         ) : (
-          <p>Loading...</p> // Render a loading message while fetching songs
+          <p>Loading...</p>
         )}
       </div>
     </Layout>
