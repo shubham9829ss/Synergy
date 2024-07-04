@@ -20,7 +20,18 @@
   opacity: 0; /* Initial opacity: hidden */
   transition: opacity 0.2s ease-in; /* Add transition for opacity */
 }
+.menu_btn {
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease-in;
+}
 
 .card:hover .play_btn {
   opacity: 1; /* Opacity: visible on hover */
+}
+.card:hover .menu_btn {
+  opacity: 1;
 }

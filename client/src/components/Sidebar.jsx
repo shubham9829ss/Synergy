@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { BiSolidHome, BiLibrary } from "react-icons/bi";
 import { FiSearch } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
+import { WiDayRainWind } from "react-icons/wi";
 import "./Sidebar.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -216,6 +217,16 @@ const Sidebar = ({ updatePlaylist, setData }) => {
             </ul>
           </div>
         )}
+      </div>
+      <div className="fixed left-0 bottom-16 custom-blur">
+        <div className="flex justify-center space-x-3 p-2 m-2 text-3xl ">
+          <span>😀</span>
+          <span>😪</span>
+          <span>😡</span>
+          <span>
+            <WiDayRainWind />
+          </span>
+        </div>
       </div>
     </div>
   );

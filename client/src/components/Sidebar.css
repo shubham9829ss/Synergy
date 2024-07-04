@@ -11,3 +11,10 @@
   width: 12px;
   background-color: black;
 }
+
+.custom-blur {
+  background-color: rgb(21 50 80 / 33%);
+}
+.custom-blur::backdrop {
+  backdrop-filter: blur(1px);
+}
